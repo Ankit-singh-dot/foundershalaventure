@@ -3,26 +3,13 @@ import { db } from "@/lib/db";
 
 export async function GET() {
   try {
-    const [leads, valuationReports, teamMembers] = await Promise.all([
+    const [leads, valuationReports] = await Promise.all([
       db.dealLead.findMany({
         orderBy: { createdAt: "desc" },
-        include: {
-          assignedTo: true,
-          updates: {
-            orderBy: { createdAt: "desc" },
-            take: 5,
-          },
-        },
       }),
       db.valuationReport.findMany({
         orderBy: { createdAt: "desc" },
         take: 50,
-      }),
-      db.teamMember.findMany({
-        orderBy: { name: "asc" },
-        include: {
-          _count: { select: { assignedDeals: true } },
-        },
       }),
     ]);
 
@@ -30,10 +17,6 @@ export async function GET() {
       success: true,
       leads,
       valuationReports,
-      teamMembers: teamMembers.map((m) => ({
-        ...m,
-        activeDealsCount: m._count.assignedDeals,
-      })),
     });
   } catch (error: any) {
     console.error("Admin leads fetch error:", error);
