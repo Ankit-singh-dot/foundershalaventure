@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Geist } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/navbar";
-import Footer from "@/components/footer";
-import SmoothScrollProvider from "@/components/smooth-scroll-provider";
+import { cn } from "@/lib/utils";
+import { TooltipProvider } from "@/components/ui/tooltip";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const inter = Inter({
   subsets: ["latin"],
@@ -22,13 +23,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="light scroll-smooth">
+    <html lang="en" className={cn("light scroll-smooth", "font-sans", geist.variable)}>
       <body className={`${inter.variable} font-sans bg-white text-slate-900 antialiased selection:bg-slate-900 selection:text-white`}>
-        <SmoothScrollProvider>
-          <Navbar />
-          <main className="min-h-screen bg-white">{children}</main>
-          <Footer />
-        </SmoothScrollProvider>
+        <TooltipProvider>
+          {children}
+        </TooltipProvider>
       </body>
     </html>
   );
