@@ -10,6 +10,55 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  ADMIN
+  MEMBER
+}
+
+enum DocumentStatus {
+  PENDING
+  UPLOADED
+  VERIFIED
+  NA
+}
+
+model User {
+  id            String       @id @default(cuid())
+  name          String
+  email         String       @unique
+  passwordHash  String
+  role          Role         @default(MEMBER)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  assignedDeals DealLead[]
+  updates       DealUpdate[]
+}
+
+model DealUpdate {
+  id         String   @id @default(cuid())
+  dealId     String
+  deal       DealLead @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  content    String   @db.Text
+  createdAt  DateTime @default(now())
+}
+
+model DealDocument {
+  id           String         @id @default(cuid())
+  dealId       String
+  deal         DealLead       @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  category     String
+  documentName String
+  status       DocumentStatus @default(PENDING)
+  fileUrl      String?
+  uploadedAt   DateTime?
+  updatedAt    DateTime       @updatedAt
+
+  @@unique([dealId, documentName])
+}
+
+
 model ValuationReport {
   id               String   @id @default(cuid())
   website          String
@@ -25,21 +74,6 @@ model ValuationReport {
   valuationMax     Float?
   readinessScore   Int?
   createdAt        DateTime @default(now())
-}
-
-model TeamMember {
-  id               String   @id @default(cuid())
-  name             String
-  email            String   @unique
-  password         String   @default("foundershala123")
-  role             String   @default("ANALYST") // ADMIN | ANALYST | ASSOCIATE
-  title            String   @default("Investment Banking Associate")
-  status           String   @default("ACTIVE") // ACTIVE | BUSY | OFFLINE
-  activeDealsCount Int      @default(0)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
-  assignedDeals    DealLead[]
 }
 
 model DealLead {
@@ -65,32 +99,14 @@ model DealLead {
   videoPitchUrl         String?
 
   requestedServices     String[] @default([])
-  status                String   @default("NEW") // NEW | IN_REVIEW | CONTACTED | CLOSED
-  stage                 String   @default("NEW_DEAL") // NEW_DEAL | ASSIGNED | MODELING | CIM_PREP | VC_MATCHING | CLOSED
-  priority              String   @default("MEDIUM") // LOW | MEDIUM | HIGH | URGENT
+  status                String   @default("NEW")
   notes                 String?
-
-  // Assigned Worker
-  assignedToId          String?
-  assignedTo            TeamMember? @relation(fields: [assignedToId], references: [id])
-  assignedToName        String?
-  assignedToEmail       String?
-  targetDate            DateTime?
-
-  updates               DealUpdateLog[]
-
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
-}
-
-model DealUpdateLog {
-  id               String   @id @default(cuid())
-  dealLeadId       String
-  dealLead         DealLead @relation(fields: [dealLeadId], references: [id], onDelete: Cascade)
-  authorName       String
-  authorRole       String   @default("ANALYST")
-  message          String   @db.Text
-  taskStatus       String   @default("IN_PROGRESS") // IN_PROGRESS | COMPLETED | BLOCKED | INFO
-  createdAt        DateTime @default(now())
+  
+  assignedToId          String?
+  assignedTo            User?    @relation(fields: [assignedToId], references: [id])
+  updates               DealUpdate[]
+  documents             DealDocument[]
 }
 
