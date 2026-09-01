@@ -1,0 +1,96 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ValuationReport {
+  id               String   @id @default(cuid())
+  website          String
+  companyName      String?
+  sector           String?
+  revenue2025      Float
+  preTaxProfit     Float
+  ownerSalary      Float
+  targetValuation  Float?
+  targetDilution   Float?
+  analysisResult   String   @db.Text
+  valuationMin     Float?
+  valuationMax     Float?
+  readinessScore   Int?
+  createdAt        DateTime @default(now())
+}
+
+model TeamMember {
+  id               String   @id @default(cuid())
+  name             String
+  email            String   @unique
+  password         String   @default("foundershala123")
+  role             String   @default("ANALYST") // ADMIN | ANALYST | ASSOCIATE
+  title            String   @default("Investment Banking Associate")
+  status           String   @default("ACTIVE") // ACTIVE | BUSY | OFFLINE
+  activeDealsCount Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  assignedDeals    DealLead[]
+}
+
+model DealLead {
+  id                    String   @id @default(cuid())
+  founderName           String
+  email                 String
+  phone                 String?
+  companyName           String
+  website               String
+  linkedin              String?
+  revenue2025           Float?
+  preTaxProfit          Float?
+  
+  // 5 Investment Deliverables
+  pitchDeckUrl          String?
+  pitchDeckFileName     String?
+  infoMemoUrl           String?
+  infoMemoFileName      String?
+  financialModelUrl     String?
+  financialModelFileName String?
+  valuationReportUrl    String?
+  valuationReportFileName String?
+  videoPitchUrl         String?
+
+  requestedServices     String[] @default([])
+  status                String   @default("NEW") // NEW | IN_REVIEW | CONTACTED | CLOSED
+  stage                 String   @default("NEW_DEAL") // NEW_DEAL | ASSIGNED | MODELING | CIM_PREP | VC_MATCHING | CLOSED
+  priority              String   @default("MEDIUM") // LOW | MEDIUM | HIGH | URGENT
+  notes                 String?
+
+  // Assigned Worker
+  assignedToId          String?
+  assignedTo            TeamMember? @relation(fields: [assignedToId], references: [id])
+  assignedToName        String?
+  assignedToEmail       String?
+  targetDate            DateTime?
+
+  updates               DealUpdateLog[]
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model DealUpdateLog {
+  id               String   @id @default(cuid())
+  dealLeadId       String
+  dealLead         DealLead @relation(fields: [dealLeadId], references: [id], onDelete: Cascade)
+  authorName       String
+  authorRole       String   @default("ANALYST")
+  message          String   @db.Text
+  taskStatus       String   @default("IN_PROGRESS") // IN_PROGRESS | COMPLETED | BLOCKED | INFO
+  createdAt        DateTime @default(now())
+}
+
