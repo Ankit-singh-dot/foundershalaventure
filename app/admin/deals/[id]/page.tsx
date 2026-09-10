@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MessageSquare, Download, Calendar, ArrowLeft, Send } from 'lucide-react';
 import Link from 'next/link';
 import { DocumentsTab } from '@/components/documents-tab';
+import { BuyerMatchesTab } from '@/components/buyer-matches-tab';
 
 type Deal = {
   id: string;
@@ -99,6 +100,7 @@ export default function DealDetailPage() {
         <TabsList className="mb-6 bg-slate-100 border border-slate-200">
           <TabsTrigger value="timeline" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Timeline & Info</TabsTrigger>
           <TabsTrigger value="documents" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Document Centre</TabsTrigger>
+          <TabsTrigger value="matches" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-sm">Synergy Engine</TabsTrigger>
         </TabsList>
 
         <TabsContent value="timeline">
@@ -218,6 +220,10 @@ export default function DealDetailPage() {
         
         <TabsContent value="documents">
           <DocumentsTab dealId={params.id as string} role={role} />
+        </TabsContent>
+        
+        <TabsContent value="matches">
+          <BuyerMatchesTab dealId={params.id as string} />
         </TabsContent>
       </Tabs>
     </div>
